@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
     <title>Upload File</title>
@@ -27,6 +27,7 @@
 </html>
 
 
+ -->
 
 
 
@@ -36,8 +37,278 @@
 
 
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A premium-quality, modern, and fully responsive webpage with advanced features.">
+  <title>Premium Upload Page</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: url('assets/background.jpg') no-repeat center center/cover;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .hero-section {
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .navbar {
+      transition: background-color 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      background-color: rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .drag-drop-area {
+      background: rgba(255, 255, 255, 0.95);
+      cursor: pointer;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .drag-drop-area:hover {
+      transform: scale(1.02);
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, #1e3c72, #2a5298);
+      border: none;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(45deg, #2a5298, #1e3c72);
+      box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+    }
+
+    /* Dark Mode */
+    body.dark-mode {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .dark-mode .navbar {
+      background-color: rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .dark-mode .card {
+      background-color: #444;
+      color: #fff;
+    }
+
+    .dark-mode .drag-drop-area {
+      background-color: #444;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-transparent fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <img src="assets/logo.png" alt="Logo" width="40" height="40" class="d-inline-block align-text-top me-2">
+        <span class="fw-bold">Premium Upload</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#upload">Upload</a></li>
+          <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section text-center d-flex align-items-center justify-content-center">
+    <div class="container">
+      <h1 class="display-3 fw-bold text-white mb-4">Welcome to Premium Upload</h1>
+      <p class="lead text-white mb-4">A fully responsive, modern webpage with advanced features.</p>
+      <a href="#upload" class="btn btn-primary btn-lg">Get Started</a>
+    </div>
+  </section>
 
 
+  <!-- File Upload Section -->
+  <section id="upload" class="upload-section py-5">
+    <div class="container">
+      <h2 class="text-center mb-4 fw-bold">Upload Your Files</h2>
+      <form method="post" enctype="multipart/form-data" class="drag-drop-area p-5 border rounded bg-white shadow">
+        {% csrf_token %}
+        <p class="text-center mb-4">Drag & Drop files here or <span class="text-primary">browse</span></p>
+        <input type="file" id="fileInput" name="file" class="form-control" required>
+        <div id="filePreview" class="mt-4"></div>
+        <div id="progressBar" class="progress mt-4" style="display: none;">
+          <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">Upload</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Processed Text Section -->
+{% if flashcards %}
+ <!-- Processed Text Section -->
+ <section id="processedText" class="processed-text-section py-5">
+   <div class="container">
+     <h2 class="text-center mb-4 fw-bold">Processed Text</h2>
+     <div class="processed-content p-5 border rounded bg-white shadow">
+       <pre id="processedOutput" class="mb-4">
+         {% for flashcard in flashcards %}
+           {{ flashcard }}
+         {% endfor %}
+       </pre>
+       <a id="downloadBtn" class="btn btn-success btn-lg w-100" download="flashcards.txt">Download Output</a>
+     </div>
+   </div>
+ </section>
+
+ <script>
+   document.addEventListener("DOMContentLoaded", function() {
+     const outputText = document.getElementById("processedOutput").innerText.trim();
+     const downloadBtn = document.getElementById("downloadBtn");
+
+     downloadBtn.addEventListener("click", function() {
+       const blob = new Blob([outputText], { type: "text/plain" });
+       const url = URL.createObjectURL(blob);
+       downloadBtn.href = url;
+     });
+   });
+ </script>
+{% endif %}
+
+
+<!-- Features Section -->
+  <section id="features" class="features-section py-5 bg-light">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold">Features</h2>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card h-100 shadow">
+            <div class="card-body text-center">
+              <i class="fas fa-upload fa-3x text-primary mb-3"></i>
+              <h5 class="card-title fw-bold">Drag-and-Drop Upload</h5>
+              <p class="card-text">Easily upload files with drag-and-drop functionality.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 shadow">
+            <div class="card-body text-center">
+              <i class="fas fa-moon fa-3x text-primary mb-3"></i>
+              <h5 class="card-title fw-bold">Dark Mode</h5>
+              <p class="card-text">Toggle between light and dark themes.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 shadow">
+            <div class="card-body text-center">
+              <i class="fas fa-eye fa-3x text-primary mb-3"></i>
+              <h5 class="card-title fw-bold">File Preview</h5>
+              <p class="card-text">Preview images, PDFs, and videos before uploading.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="contact-section py-5">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold">Contact Us</h2>
+      <form id="contactForm" class="row g-3">
+        <div class="col-md-6">
+          <input type="text" class="form-control" placeholder="Name" required>
+        </div>
+        <div class="col-md-6">
+          <input type="email" class="form-control" placeholder="Email" required>
+        </div>
+        <div class="col-12">
+          <textarea class="form-control" placeholder="Message" rows="5" required></textarea>
+        </div>
+        <div class="col-12 text-center">
+          <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Floating Action Button -->
+  <button id="fab" class="btn btn-primary fab shadow-lg"><i class="fas fa-upload"></i></button>
+
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // File Upload and Preview
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+
+    fileInput.addEventListener('change', (e) => {
+      filePreview.innerHTML = '';
+      const files = e.target.files;
+      for (const file of files) {
+        const fileElement = document.createElement('div');
+        fileElement.className = 'file-item mb-2';
+        fileElement.textContent = file.name;
+        filePreview.appendChild(fileElement);
+      }
+    });
+
+    // Download Processed Text
+    const downloadBtn = document.getElementById('downloadBtn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => {
+        const processedOutput = document.getElementById('processedOutput').textContent;
+        const blob = new Blob([processedOutput], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'output.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+  </script>
+</body>
+</html>
 
 
 
