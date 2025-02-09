@@ -4,6 +4,7 @@ from .models import Document
 import PyPDF2
 import docx
 import requests
+import google.generativeai as genai
 
 # Function to extract text from PDF files
 def extract_text_from_pdf(file):
@@ -27,22 +28,38 @@ def extract_text_from_txt(file):
 
 # Function to generate flashcards using OpenAI API
 def generate_flashcards(text, api_key):
-    url = "https://api.openai.com/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+    # Configure the Gemini API
+    genai.configure(api_key=api_key)
+    
+    # Initialize the model (replace 'gemini-pro' with the appropriate model name)
+    model = genai.GenerativeModel('gemini-pro')
+    
+    # Define the system and user messages to match OpenAI's format
+    messages = [
+        {"role": "system", "content": "You are an AI that generates educational flashcards."},
+        {"role": "user", "content": f"Generate flashcards from the following text:\n\n{text},like question and answers,give answers in length so that we can add that in flashcard"}
+    ]
+    
+    # Combine messages into a single prompt for Gemini
+    prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
+    
+    # Generate the response
+    response = model.generate_content(prompt)
+    
+    # Format the response to match OpenAI's output structure
+    formatted_response = {
+        "choices": [
+            {
+                "message": {
+                    "content": response.text
+                }
+            }
+        ]
     }
-    data = {
-        "model": "gpt-4-turbo",
-        "messages": [
-                {"role": "system", "content": "You are an AI that generates educational flashcards."},
-                {"role": "user", "content": f"Generate concise flashcards from the following text:\n\n{text}"}
-            ],
-        "max_tokens": 300
-    }
-    response = requests.post(url, headers=headers, json=data)
-    print(response.status_code, response.text)
-    return response.json()['choices'][0]['message']['content']
+    
+
+    return formatted_response['choices'][0]['message']['content']
+
 
 
 # View to handle file uploads
