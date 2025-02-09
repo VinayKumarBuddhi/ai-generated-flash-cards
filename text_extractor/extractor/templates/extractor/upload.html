@@ -50,6 +50,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+<!-- Bootstrap JS and Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
   <style>
     /* General Styles */
     body {
@@ -129,6 +136,29 @@
       background-color: #444;
       color: #fff;
     }
+    .carousel-item {
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      padding: 10px;
+    }
+    .carousel-indicators [data-bs-target] {
+      background-color: #000;
+    }
+    .processed-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
@@ -150,6 +180,7 @@
         </ul>
       </div>
     </div>
+    <button class="btn btn-secondary" id="darkModeToggle">Toggle Dark Mode</button>
   </nav>
 
   <!-- Hero Section -->
@@ -179,36 +210,38 @@
     </div>
   </section>
 
+  
+
+  {% if flashcards %}
   <!-- Processed Text Section -->
-{% if flashcards %}
- <!-- Processed Text Section -->
- <section id="processedText" class="processed-text-section py-5">
-   <div class="container">
-     <h2 class="text-center mb-4 fw-bold">Processed Text</h2>
-     <div class="processed-content p-5 border rounded bg-white shadow">
-       <pre id="processedOutput" class="mb-4">
-         {% for flashcard in flashcards %}
-           {{ flashcard }}
-         {% endfor %}
-       </pre>
-       <a id="downloadBtn" class="btn btn-success btn-lg w-100" download="flashcards.txt">Download Output</a>
-     </div>
-   </div>
- </section>
-
- <script>
-   document.addEventListener("DOMContentLoaded", function() {
-     const outputText = document.getElementById("processedOutput").innerText.trim();
-     const downloadBtn = document.getElementById("downloadBtn");
-
-     downloadBtn.addEventListener("click", function() {
-       const blob = new Blob([outputText], { type: "text/plain" });
-       const url = URL.createObjectURL(blob);
-       downloadBtn.href = url;
-     });
-   });
- </script>
-{% endif %}
+  <section id="processedText" class="processed-text-section py-5">
+    <div class="container">
+      <h2 class="text-center mb-4 fw-bold">Processed Text</h2>
+      <div class="processed-content p-5 border rounded bg-white shadow">
+        <pre id="processedOutput" class="mb-4">
+          {% for flashcard in flashcards %}
+            {{ flashcard }}
+          {% endfor %}
+        </pre>
+        <a id="downloadBtn" class="btn btn-success btn-lg w-100" download="flashcards.txt">Download Output</a>
+      </div>
+    </div>
+  </section>
+ 
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const outputText = document.getElementById("processedOutput").innerText.trim();
+      const downloadBtn = document.getElementById("downloadBtn");
+ 
+      downloadBtn.addEventListener("click", function() {
+        const blob = new Blob([outputText], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        downloadBtn.href = url;
+      });
+    });
+  </script>
+ {% endif %}
+ 
 
 
 <!-- Features Section -->
@@ -273,11 +306,23 @@
 
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
   <script>
+     // JavaScript to handle the download button
+
+      
+    
+      // Dark Mode Toggle
+  const toggleDarkMode = () => {
+    document.body.classList.toggle('dark-mode');
+  };
     // File Upload and Preview
     const fileInput = document.getElementById('fileInput');
     const filePreview = document.getElementById('filePreview');
+    const progressBar = document.getElementById('progressBar');
+  const processedTextSection = document.getElementById('processedText');
+  const processedOutput = document.getElementById('processedOutput');
+  document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
 
     fileInput.addEventListener('change', (e) => {
       filePreview.innerHTML = '';
@@ -289,6 +334,61 @@
         filePreview.appendChild(fileElement);
       }
     });
+  // Progress Bar Animation
+    const uploadFiles = () => {
+    progressBar.style.display = 'block';
+    let width = 0;
+    const interval = setInterval(() => {
+      if (width >= 100) {
+        clearInterval(interval);
+        alert('Upload complete!');
+      } else {
+        width++;
+        progressBar.querySelector('.progress-bar').style.width = width + '%';
+      }
+    }, 20);
+  };
+
+  document.getElementById('uploadBtn').addEventListener('click', function () {
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      // Show progress bar
+      progressBar.style.display = 'block';
+
+      reader.onload = function (event) {
+        // Simulate file processing (replace this with actual processing logic)
+        setTimeout(() => {
+          const fileContent = event.target.result;
+          const processedContent = processFile(fileContent); // Replace with your processing logic
+
+          // Display processed text
+          //processedOutput.textContent = processedContent;
+          processedTextSection.style.display = 'block';
+
+          // Hide progress bar
+          progressBar.style.display = 'none';
+
+          // Enable download button
+          downloadBtn.onclick = () => {
+            downloadFile(processedOutput.textContent, 'output.txt');
+          };
+        }, 2000); // Simulate a 2-second delay for processing
+      };
+
+      reader.onprogress = function (event) {
+        if (event.lengthComputable) {
+          const percentLoaded = Math.round((event.loaded / event.total) * 100);
+          progressBar.querySelector('.progress-bar').style.width = percentLoaded + '%';
+        }
+      };
+
+      reader.readAsText(file); // Read the file as text (adjust for other file types)
+    } else {
+      alert('Please select a file to upload.');
+    }
+  });
 
     // Download Processed Text
     const downloadBtn = document.getElementById('downloadBtn');
@@ -306,6 +406,47 @@
         URL.revokeObjectURL(url);
       });
     }
+
+  // Floating Action Button
+  document.getElementById('fab').addEventListener('click', () => {
+    fileInput.click();
+  });
+
+      // Drag and Drop Functionality
+  const dragDropArea = document.querySelector('.drag-drop-area');
+
+dragDropArea.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dragDropArea.classList.add('dragover');
+});
+
+dragDropArea.addEventListener('dragleave', () => {
+  dragDropArea.classList.remove('dragover');
+});
+
+dragDropArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dragDropArea.classList.remove('dragover');
+  fileInput.files = e.dataTransfer.files;
+  fileInput.dispatchEvent(new Event('change'));
+});
+
+// Dark Mode Toggle Button
+const darkModeToggle = document.createElement('button');
+darkModeToggle.className = 'btn btn-secondary';
+darkModeToggle.textContent = 'Toggle Dark Mode';
+darkModeToggle.addEventListener('click', toggleDarkMode);
+document.querySelector('.navbar').appendChild(darkModeToggle);
+
+// Sticky Navbar on Scroll
+window.addEventListener('scroll', () => {
+  const navbar = document.querySelector('.navbar');
+  if (window.scrollY > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+});
   </script>
 </body>
 </html>
